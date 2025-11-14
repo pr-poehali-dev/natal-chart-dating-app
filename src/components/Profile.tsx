@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+
+const NATAL_API_URL = 'https://functions.poehali.dev/d6cae79a-9e1d-4137-9dca-e23bf189eaf3';
 
 interface BirthData {
   date: string;
@@ -18,11 +20,69 @@ export default function Profile() {
     city: ''
   });
   const [isComplete, setIsComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [zodiacSign, setZodiacSign] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const loadUserData = async () => {
+      const userId = localStorage.getItem('user_id');
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`${NATAL_API_URL}?user_id=${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.birth_date && data.birth_time && data.birth_city) {
+            setBirthData({
+              date: data.birth_date,
+              time: data.birth_time,
+              city: data.birth_city
+            });
+            setZodiacSign(data.zodiac_sign || '');
+            setIsComplete(true);
+          } else {
+            setIsEditing(true);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load user data:', err);
+      }
+    };
+
+    loadUserData();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (birthData.date && birthData.time && birthData.city) {
-      setIsComplete(true);
+    if (!birthData.date || !birthData.time || !birthData.city) return;
+
+    setIsLoading(true);
+    const userId = localStorage.getItem('user_id');
+
+    try {
+      const response = await fetch(NATAL_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_birth_data',
+          user_id: userId,
+          birth_date: birthData.date,
+          birth_time: birthData.time,
+          birth_city: birthData.city
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setZodiacSign(data.zodiac_sign || '');
+        setIsComplete(true);
+        setIsEditing(false);
+      }
+    } catch (err) {
+      console.error('Failed to update birth data:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,6 +122,7 @@ export default function Profile() {
                   value={birthData.date}
                   onChange={(e) => setBirthData({ ...birthData, date: e.target.value })}
                   className="text-lg h-12 bg-input/50"
+                  disabled={isComplete && !isEditing}
                   required
                 />
               </div>
@@ -76,6 +137,7 @@ export default function Profile() {
                   value={birthData.time}
                   onChange={(e) => setBirthData({ ...birthData, time: e.target.value })}
                   className="text-lg h-12 bg-input/50"
+                  disabled={isComplete && !isEditing}
                   required
                 />
               </div>
@@ -91,17 +153,39 @@ export default function Profile() {
                   value={birthData.city}
                   onChange={(e) => setBirthData({ ...birthData, city: e.target.value })}
                   className="text-lg h-12 bg-input/50"
+                  disabled={isComplete && !isEditing}
                   required
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 glow"
-              >
-                <Icon name="Sparkles" size={20} className="mr-2" />
-                Создать натальную карту
-              </Button>
+              {isComplete && !isEditing ? (
+                <Button 
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="w-full h-14 text-lg font-semibold bg-secondary hover:bg-secondary/90"
+                >
+                  <Icon name="Edit" size={20} className="mr-2" />
+                  Редактировать данные
+                </Button>
+              ) : (
+                <Button 
+                  type="submit" 
+                  className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 glow"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+                      Сохранение...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Sparkles" size={20} className="mr-2" />
+                      {isComplete ? 'Сохранить изменения' : 'Создать натальную карту'}
+                    </>
+                  )}
+                </Button>
+              )}
             </form>
           </CardContent>
         </Card>
@@ -132,16 +216,18 @@ export default function Profile() {
 
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <div className="text-sm text-muted-foreground mb-1">Солнце</div>
-                  <div className="text-2xl font-semibold text-primary">♌ Лев</div>
+                  <div className="text-sm text-muted-foreground mb-1">Знак зодиака</div>
+                  <div className="text-2xl font-semibold text-primary">{zodiacSign}</div>
                 </div>
                 <div className="p-4 bg-secondary/10 rounded-lg border border-secondary/20">
-                  <div className="text-sm text-muted-foreground mb-1">Луна</div>
-                  <div className="text-2xl font-semibold text-secondary">♋ Рак</div>
+                  <div className="text-sm text-muted-foreground mb-1">Дата рождения</div>
+                  <div className="text-lg font-semibold text-secondary">
+                    {new Date(birthData.date).toLocaleDateString('ru-RU')}
+                  </div>
                 </div>
                 <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
-                  <div className="text-sm text-muted-foreground mb-1">Асцендент</div>
-                  <div className="text-2xl font-semibold text-accent">♏ Скорпион</div>
+                  <div className="text-sm text-muted-foreground mb-1">Время рождения</div>
+                  <div className="text-lg font-semibold text-accent">{birthData.time}</div>
                 </div>
               </div>
 

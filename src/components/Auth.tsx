@@ -3,8 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
+import RegisterFlow from './RegisterFlow';
 
 const AUTH_API_URL = 'https://functions.poehali.dev/32a0e3f4-4ca3-4d4f-b173-a3d3df04281d';
 
@@ -13,19 +13,13 @@ interface AuthProps {
 }
 
 export default function Auth({ onAuthSuccess }: AuthProps) {
+  const [showRegister, setShowRegister] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
-  });
-
-  const [registerData, setRegisterData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
   });
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -60,49 +54,14 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (registerData.password !== registerData.confirmPassword) {
-      setError('Пароли не совпадают');
-      return;
-    }
-
-    if (registerData.password.length < 6) {
-      setError('Пароль должен быть минимум 6 символов');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(AUTH_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'register',
-          name: registerData.name,
-          email: registerData.email,
-          password: registerData.password
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('session_token', data.session_token);
-        localStorage.setItem('user_id', data.user_id.toString());
-        onAuthSuccess(data);
-      } else {
-        setError(data.error || 'Ошибка регистрации');
-      }
-    } catch (err) {
-      setError('Ошибка подключения к серверу');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (showRegister) {
+    return (
+      <RegisterFlow 
+        onComplete={onAuthSuccess} 
+        onBack={() => setShowRegister(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen w-full cosmic-gradient star-field flex items-center justify-center p-4">
@@ -120,17 +79,10 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
           <CardHeader>
             <CardTitle className="text-center text-2xl">Добро пожаловать</CardTitle>
             <CardDescription className="text-center">
-              Войдите или создайте аккаунт
+              Войдите в свой аккаунт
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">Вход</TabsTrigger>
-                <TabsTrigger value="register">Регистрация</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
@@ -182,88 +134,20 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
                     )}
                   </Button>
                 </form>
-              </TabsContent>
 
-              <TabsContent value="register">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="register-name">Имя</Label>
-                    <Input
-                      id="register-name"
-                      type="text"
-                      placeholder="Ваше имя"
-                      value={registerData.name}
-                      onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                      className="bg-input/50"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
-                    <Input
-                      id="register-email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={registerData.email}
-                      onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                      className="bg-input/50"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Пароль</Label>
-                    <Input
-                      id="register-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={registerData.password}
-                      onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                      className="bg-input/50"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="register-confirm">Подтвердите пароль</Label>
-                    <Input
-                      id="register-confirm"
-                      type="password"
-                      placeholder="••••••••"
-                      value={registerData.confirmPassword}
-                      onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                      className="bg-input/50"
-                      required
-                    />
-                  </div>
-
-                  {error && (
-                    <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
-                      {error}
-                    </div>
-                  )}
-
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Нет аккаунта?
+                  </p>
                   <Button
-                    type="submit"
-                    className="w-full h-12 bg-primary hover:bg-primary/90"
-                    disabled={isLoading}
+                    variant="outline"
+                    className="w-full border-primary/30"
+                    onClick={() => setShowRegister(true)}
                   >
-                    {isLoading ? (
-                      <>
-                        <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
-                        Регистрация...
-                      </>
-                    ) : (
-                      <>
-                        <Icon name="Sparkles" size={20} className="mr-2" />
-                        Создать аккаунт
-                      </>
-                    )}
+                    <Icon name="Sparkles" size={18} className="mr-2" />
+                    Создать аккаунт
                   </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+                </div>
           </CardContent>
         </Card>
       </div>

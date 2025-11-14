@@ -1,29 +1,30 @@
 {
   "tests": [
     {
-      "name": "Get user profile with natal chart",
+      "name": "Get existing user profile",
       "method": "GET",
       "path": "/?user_id=1",
-      "expectedStatus": 404,
+      "expectedStatus": 200,
+      "expectedBody": {
+        "name": "string",
+        "email": "string"
+      },
       "bodyMatcher": "partial"
     },
     {
-      "name": "Create user profile with natal chart",
+      "name": "Update birth data",
       "method": "POST",
       "path": "/",
       "body": {
-        "action": "create_profile",
-        "name": "Тестовый Пользователь",
-        "email": "test@example.com",
-        "birth_date": "1990-08-15",
-        "birth_time": "14:30:00",
-        "birth_city": "Москва"
+        "action": "update_birth_data",
+        "user_id": 1,
+        "birth_date": "1995-05-20",
+        "birth_time": "10:00:00",
+        "birth_city": "Санкт-Петербург"
       },
       "expectedStatus": 200,
       "expectedBody": {
-        "zodiac_sign": "string",
-        "moon_sign": "string",
-        "ascendant": "string"
+        "success": true
       },
       "bodyMatcher": "partial"
     }

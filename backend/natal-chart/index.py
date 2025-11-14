@@ -127,6 +127,39 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     })
                 }
             
+            elif action == 'update_birth_data':
+                user_id = body_data.get('user_id')
+                birth_date = body_data.get('birth_date')
+                birth_time = body_data.get('birth_time')
+                birth_city = body_data.get('birth_city')
+                
+                zodiac_sign = calculate_zodiac_sign(birth_date)
+                
+                cursor.execute(
+                    "UPDATE users SET birth_date = %s, birth_time = %s, birth_city = %s, zodiac_sign = %s "
+                    "WHERE id = %s",
+                    (birth_date, birth_time, birth_city, zodiac_sign, user_id)
+                )
+                
+                cursor.execute(
+                    "INSERT INTO natal_charts (user_id, sun_sign, moon_sign, ascendant) "
+                    "VALUES (%s, %s, %s, %s) "
+                    "ON CONFLICT DO NOTHING",
+                    (user_id, zodiac_sign, zodiac_sign, zodiac_sign)
+                )
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'isBase64Encoded': False,
+                    'body': json.dumps({
+                        'success': True,
+                        'zodiac_sign': zodiac_sign
+                    })
+                }
+            
             elif action == 'calculate_compatibility':
                 user1_id = body_data.get('user1_id')
                 user2_id = body_data.get('user2_id')
@@ -199,11 +232,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'User not found'})
                 }
             
+            user_data = dict(user)
+            if 'birth_date' in user_data and user_data['birth_date']:
+                user_data['birth_date'] = str(user_data['birth_date'])
+            if 'birth_time' in user_data and user_data['birth_time']:
+                user_data['birth_time'] = str(user_data['birth_time'])
+            if 'created_at' in user_data and user_data['created_at']:
+                user_data['created_at'] = str(user_data['created_at'])
+            if 'updated_at' in user_data and user_data['updated_at']:
+                user_data['updated_at'] = str(user_data['updated_at'])
+            
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'isBase64Encoded': False,
-                'body': json.dumps(dict(user))
+                'body': json.dumps(user_data)
             }
         
         finally:
