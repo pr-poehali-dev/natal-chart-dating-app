@@ -255,6 +255,8 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                       setBirthData(newData);
                       sessionStorage.setItem('registerBirthData', JSON.stringify(newData));
                     }}
+                    min="1900-01-01"
+                    max={new Date().toISOString().split('T')[0]}
                     className="bg-input/50"
                     required
                   />
