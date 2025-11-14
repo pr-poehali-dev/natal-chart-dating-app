@@ -135,19 +135,20 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
                   </Button>
                 </form>
 
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Нет аккаунта?
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="w-full border-primary/30"
-                    onClick={() => setShowRegister(true)}
-                  >
-                    <Icon name="Sparkles" size={18} className="mr-2" />
-                    Создать аккаунт
-                  </Button>
-                </div>
+            <div className="mt-4 text-center">
+              <p className="text-sm text-muted-foreground mb-3">
+                Нет аккаунта?
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-primary/30"
+                onClick={() => setShowRegister(true)}
+              >
+                <Icon name="Sparkles" size={18} className="mr-2" />
+                Создать аккаунт
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
