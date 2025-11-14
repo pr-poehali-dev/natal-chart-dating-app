@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
+import ChatView from './ChatView';
 
 interface Chat {
   id: number;
@@ -38,6 +40,23 @@ const chats: Chat[] = [
 ];
 
 export default function Chats() {
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+
+  if (selectedChat) {
+    return (
+      <ChatView
+        chat={{
+          chat_id: selectedChat.id,
+          other_user_id: selectedChat.id,
+          other_user_name: selectedChat.name,
+          other_user_sign: selectedChat.sign
+        }}
+        currentUserId={999}
+        onBack={() => setSelectedChat(null)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen w-full cosmic-gradient star-field p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
@@ -55,6 +74,7 @@ export default function Chats() {
             <Card
               key={chat.id}
               className="glow border-primary/30 bg-card/80 backdrop-blur-sm hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+              onClick={() => setSelectedChat(chat)}
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">

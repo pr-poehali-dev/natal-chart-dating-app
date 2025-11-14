@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
+import CompatibilityDetail from './CompatibilityDetail';
 
 interface UserProfile {
   id: number;
@@ -11,6 +12,7 @@ interface UserProfile {
   age: number;
   compatibility: number;
   sign: string;
+  zodiac_sign?: string;
   description: string;
   initials: string;
 }
@@ -73,7 +75,16 @@ const mockUsers: UserProfile[] = [
 ];
 
 export default function Search() {
-  const [users] = useState<UserProfile[]>(mockUsers);
+  const [users] = useState<UserProfile[]>(mockUsers.map(u => ({
+    ...u,
+    zodiac_sign: u.sign === '♓' ? 'Рыбы' : u.sign === '♉' ? 'Телец' : u.sign === '♏' ? 'Скорпион' : 
+                 u.sign === '♒' ? 'Водолей' : u.sign === '♊' ? 'Близнецы' : 'Стрелец'
+  })));
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+
+  if (selectedUser) {
+    return <CompatibilityDetail user={selectedUser} onClose={() => setSelectedUser(null)} />;
+  }
 
   const getCompatibilityColor = (compatibility: number) => {
     if (compatibility >= 90) return 'from-green-400 to-emerald-600';
@@ -155,7 +166,11 @@ export default function Search() {
                 </div>
 
                 <div className="pt-2 border-t border-border/50">
-                  <Button variant="ghost" className="w-full text-sm text-muted-foreground hover:text-foreground">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setSelectedUser(user)}
+                  >
                     <Icon name="Info" size={16} className="mr-2" />
                     Детали совместимости
                   </Button>
