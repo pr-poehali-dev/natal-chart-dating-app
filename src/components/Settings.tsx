@@ -140,9 +140,17 @@ export default function Settings() {
               <Icon name="Key" size={18} className="mr-2" />
               Изменить пароль
             </Button>
-            <Button variant="destructive" className="w-full">
-              <Icon name="Trash2" size={18} className="mr-2" />
-              Удалить аккаунт
+            <Button 
+              variant="destructive" 
+              className="w-full"
+              onClick={() => {
+                localStorage.removeItem('session_token');
+                localStorage.removeItem('user_id');
+                window.location.reload();
+              }}
+            >
+              <Icon name="LogOut" size={18} className="mr-2" />
+              Выйти из аккаунта
             </Button>
           </CardContent>
         </Card>
