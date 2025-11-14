@@ -136,9 +136,6 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
                 </form>
 
             <div className="mt-4 text-center">
-              <p className="text-sm text-muted-foreground mb-3">
-                Нет аккаунта?
-              </p>
               <Button
                 type="button"
                 variant="outline"
@@ -146,7 +143,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
                 onClick={() => setShowRegister(true)}
               >
                 <Icon name="Sparkles" size={18} className="mr-2" />
-                Создать аккаунт
+                Регистрация
               </Button>
             </div>
           </CardContent>
