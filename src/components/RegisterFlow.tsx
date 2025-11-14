@@ -15,21 +15,30 @@ interface RegisterFlowProps {
 }
 
 export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(() => {
+    const saved = sessionStorage.getItem('registerStep');
+    return saved ? parseInt(saved) : 1;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const [accountData, setAccountData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+  const [accountData, setAccountData] = useState(() => {
+    const saved = sessionStorage.getItem('registerAccountData');
+    return saved ? JSON.parse(saved) : {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    };
   });
 
-  const [birthData, setBirthData] = useState({
-    birth_date: '',
-    birth_time: '',
-    birth_city: ''
+  const [birthData, setBirthData] = useState(() => {
+    const saved = sessionStorage.getItem('registerBirthData');
+    return saved ? JSON.parse(saved) : {
+      birth_date: '',
+      birth_time: '',
+      birth_city: ''
+    };
   });
 
   const handleStep1Next = (e: React.FormEvent) => {
@@ -46,6 +55,8 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
       return;
     }
 
+    sessionStorage.setItem('registerAccountData', JSON.stringify(accountData));
+    sessionStorage.setItem('registerStep', '2');
     setStep(2);
   };
 
@@ -53,6 +64,8 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    sessionStorage.setItem('registerBirthData', JSON.stringify(birthData));
 
     try {
       const authResponse = await fetch(AUTH_API_URL, {
@@ -89,6 +102,10 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
       if (!natalResponse.ok) {
         console.error('Failed to save birth data');
       }
+
+      sessionStorage.removeItem('registerStep');
+      sessionStorage.removeItem('registerAccountData');
+      sessionStorage.removeItem('registerBirthData');
 
       localStorage.setItem('session_token', authData.session_token);
       localStorage.setItem('user_id', authData.user_id.toString());
@@ -136,7 +153,11 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     type="text"
                     placeholder="Ваше имя"
                     value={accountData.name}
-                    onChange={(e) => setAccountData({ ...accountData, name: e.target.value })}
+                    onChange={(e) => {
+                      const newData = { ...accountData, name: e.target.value };
+                      setAccountData(newData);
+                      sessionStorage.setItem('registerAccountData', JSON.stringify(newData));
+                    }}
                     className="bg-input/50"
                     required
                   />
@@ -149,7 +170,11 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     type="email"
                     placeholder="your@email.com"
                     value={accountData.email}
-                    onChange={(e) => setAccountData({ ...accountData, email: e.target.value })}
+                    onChange={(e) => {
+                      const newData = { ...accountData, email: e.target.value };
+                      setAccountData(newData);
+                      sessionStorage.setItem('registerAccountData', JSON.stringify(newData));
+                    }}
                     className="bg-input/50"
                     required
                   />
@@ -162,7 +187,11 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     type="password"
                     placeholder="••••••••"
                     value={accountData.password}
-                    onChange={(e) => setAccountData({ ...accountData, password: e.target.value })}
+                    onChange={(e) => {
+                      const newData = { ...accountData, password: e.target.value };
+                      setAccountData(newData);
+                      sessionStorage.setItem('registerAccountData', JSON.stringify(newData));
+                    }}
                     className="bg-input/50"
                     required
                   />
@@ -175,7 +204,11 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     type="password"
                     placeholder="••••••••"
                     value={accountData.confirmPassword}
-                    onChange={(e) => setAccountData({ ...accountData, confirmPassword: e.target.value })}
+                    onChange={(e) => {
+                      const newData = { ...accountData, confirmPassword: e.target.value };
+                      setAccountData(newData);
+                      sessionStorage.setItem('registerAccountData', JSON.stringify(newData));
+                    }}
                     className="bg-input/50"
                     required
                   />
@@ -192,7 +225,12 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     type="button"
                     variant="outline"
                     className="flex-1"
-                    onClick={onBack}
+                    onClick={() => {
+                      sessionStorage.removeItem('registerStep');
+                      sessionStorage.removeItem('registerAccountData');
+                      sessionStorage.removeItem('registerBirthData');
+                      onBack();
+                    }}
                   >
                     Назад
                   </Button>
@@ -212,7 +250,11 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     id="birth_date"
                     type="date"
                     value={birthData.birth_date}
-                    onChange={(e) => setBirthData({ ...birthData, birth_date: e.target.value })}
+                    onChange={(e) => {
+                      const newData = { ...birthData, birth_date: e.target.value };
+                      setBirthData(newData);
+                      sessionStorage.setItem('registerBirthData', JSON.stringify(newData));
+                    }}
                     className="bg-input/50"
                     required
                   />
@@ -224,7 +266,11 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     id="birth_time"
                     type="time"
                     value={birthData.birth_time}
-                    onChange={(e) => setBirthData({ ...birthData, birth_time: e.target.value })}
+                    onChange={(e) => {
+                      const newData = { ...birthData, birth_time: e.target.value };
+                      setBirthData(newData);
+                      sessionStorage.setItem('registerBirthData', JSON.stringify(newData));
+                    }}
                     className="bg-input/50"
                     required
                   />
@@ -237,7 +283,11 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     type="text"
                     placeholder="Москва"
                     value={birthData.birth_city}
-                    onChange={(e) => setBirthData({ ...birthData, birth_city: e.target.value })}
+                    onChange={(e) => {
+                      const newData = { ...birthData, birth_city: e.target.value };
+                      setBirthData(newData);
+                      sessionStorage.setItem('registerBirthData', JSON.stringify(newData));
+                    }}
                     className="bg-input/50"
                     required
                   />
@@ -263,7 +313,10 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     type="button"
                     variant="outline"
                     className="flex-1"
-                    onClick={() => setStep(1)}
+                    onClick={() => {
+                      sessionStorage.setItem('registerStep', '1');
+                      setStep(1);
+                    }}
                     disabled={isLoading}
                   >
                     Назад
