@@ -132,13 +132,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 birth_date = body_data.get('birth_date')
                 birth_time = body_data.get('birth_time')
                 birth_city = body_data.get('birth_city')
+                gender = body_data.get('gender')
                 
                 zodiac_sign = calculate_zodiac_sign(birth_date)
                 
                 cursor.execute(
-                    "UPDATE users SET birth_date = %s, birth_time = %s, birth_city = %s, zodiac_sign = %s "
+                    "UPDATE users SET birth_date = %s, birth_time = %s, birth_city = %s, zodiac_sign = %s, gender = %s "
                     "WHERE id = %s",
-                    (birth_date, birth_time, birth_city, zodiac_sign, user_id)
+                    (birth_date, birth_time, birth_city, zodiac_sign, gender, user_id)
                 )
                 
                 cursor.execute(

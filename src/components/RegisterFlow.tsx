@@ -37,7 +37,8 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
     return saved ? JSON.parse(saved) : {
       birth_date: '',
       birth_time: '',
-      birth_city: ''
+      birth_city: '',
+      gender: ''
     };
   });
 
@@ -63,6 +64,12 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
   const handleStep2Complete = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!birthData.gender) {
+      setError('Пожалуйста, выберите пол');
+      return;
+    }
+
     setIsLoading(true);
 
     sessionStorage.setItem('registerBirthData', JSON.stringify(birthData));
@@ -95,7 +102,8 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
           user_id: authData.user_id,
           birth_date: birthData.birth_date,
           birth_time: birthData.birth_time,
-          birth_city: birthData.birth_city
+          birth_city: birthData.birth_city,
+          gender: birthData.gender
         })
       });
 
@@ -293,6 +301,51 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
                     className="bg-input/50"
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Пол</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Button
+                      type="button"
+                      variant={birthData.gender === 'male' ? 'default' : 'outline'}
+                      className={birthData.gender === 'male' ? 'bg-primary' : 'border-primary/30'}
+                      onClick={() => {
+                        const newData = { ...birthData, gender: 'male' };
+                        setBirthData(newData);
+                        sessionStorage.setItem('registerBirthData', JSON.stringify(newData));
+                      }}
+                    >
+                      <Icon name="User" size={18} className="mr-2" />
+                      Мужской
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={birthData.gender === 'female' ? 'default' : 'outline'}
+                      className={birthData.gender === 'female' ? 'bg-primary' : 'border-primary/30'}
+                      onClick={() => {
+                        const newData = { ...birthData, gender: 'female' };
+                        setBirthData(newData);
+                        sessionStorage.setItem('registerBirthData', JSON.stringify(newData));
+                      }}
+                    >
+                      <Icon name="User" size={18} className="mr-2" />
+                      Женский
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={birthData.gender === 'other' ? 'default' : 'outline'}
+                      className={birthData.gender === 'other' ? 'bg-primary' : 'border-primary/30'}
+                      onClick={() => {
+                        const newData = { ...birthData, gender: 'other' };
+                        setBirthData(newData);
+                        sessionStorage.setItem('registerBirthData', JSON.stringify(newData));
+                      }}
+                    >
+                      <Icon name="User" size={18} className="mr-2" />
+                      Другой
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg">

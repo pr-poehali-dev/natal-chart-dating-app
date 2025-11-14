@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import CompatibilityDetail from './CompatibilityDetail';
 
@@ -81,6 +82,7 @@ export default function Search() {
                  u.sign === '♒' ? 'Водолей' : u.sign === '♊' ? 'Близнецы' : 'Стрелец'
   })));
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [genderFilter, setGenderFilter] = useState<string>('all');
 
   if (selectedUser) {
     return <CompatibilityDetail user={selectedUser} onClose={() => setSelectedUser(null)} />;
@@ -100,6 +102,18 @@ export default function Search() {
     return 'Средняя';
   };
 
+  const filteredUsers = users.filter(user => {
+    if (genderFilter === 'all') return true;
+    const userName = user.name.toLowerCase();
+    if (genderFilter === 'female') {
+      return ['александра', 'елена', 'виктория'].some(name => userName.includes(name));
+    }
+    if (genderFilter === 'male') {
+      return ['дмитрий', 'максим', 'артём'].some(name => userName.includes(name));
+    }
+    return true;
+  });
+
   return (
     <div className="min-h-screen w-full cosmic-gradient star-field p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
@@ -112,8 +126,57 @@ export default function Search() {
           </p>
         </div>
 
+        <Card className="glow border-primary/30 bg-card/80 backdrop-blur-sm mb-6">
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <Icon name="Filter" size={18} className="text-primary" />
+                Фильтр по полу
+              </Label>
+              <div className="grid grid-cols-4 gap-3">
+                <Button
+                  type="button"
+                  variant={genderFilter === 'all' ? 'default' : 'outline'}
+                  className={genderFilter === 'all' ? 'bg-primary' : 'border-primary/30'}
+                  onClick={() => setGenderFilter('all')}
+                >
+                  <Icon name="Users" size={18} className="mr-2" />
+                  Все
+                </Button>
+                <Button
+                  type="button"
+                  variant={genderFilter === 'male' ? 'default' : 'outline'}
+                  className={genderFilter === 'male' ? 'bg-primary' : 'border-primary/30'}
+                  onClick={() => setGenderFilter('male')}
+                >
+                  <Icon name="User" size={18} className="mr-2" />
+                  Мужчины
+                </Button>
+                <Button
+                  type="button"
+                  variant={genderFilter === 'female' ? 'default' : 'outline'}
+                  className={genderFilter === 'female' ? 'bg-primary' : 'border-primary/30'}
+                  onClick={() => setGenderFilter('female')}
+                >
+                  <Icon name="User" size={18} className="mr-2" />
+                  Женщины
+                </Button>
+                <Button
+                  type="button"
+                  variant={genderFilter === 'other' ? 'default' : 'outline'}
+                  className={genderFilter === 'other' ? 'bg-primary' : 'border-primary/30'}
+                  onClick={() => setGenderFilter('other')}
+                >
+                  <Icon name="User" size={18} className="mr-2" />
+                  Другие
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users.map((user, index) => (
+          {filteredUsers.map((user, index) => (
             <Card
               key={user.id}
               className="glow border-primary/30 bg-card/80 backdrop-blur-sm hover:scale-105 transition-transform duration-300 cursor-pointer"
