@@ -86,6 +86,10 @@ export default function RegisterFlow({ onComplete, onBack }: RegisterFlowProps) 
         })
       });
 
+      if (!natalResponse.ok) {
+        console.error('Failed to save birth data');
+      }
+
       localStorage.setItem('session_token', authData.session_token);
       localStorage.setItem('user_id', authData.user_id.toString());
       
